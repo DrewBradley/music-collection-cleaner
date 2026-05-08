@@ -20,6 +20,8 @@ Clone or download this repository to your local machine.
 
 ## Usage
 
+The script assumes your directories are structured Artist/Album/Song
+
 ### Running from command line
 
 To execute the cleaner, open a terminal and run the script directly:
