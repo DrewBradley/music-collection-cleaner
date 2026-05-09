@@ -27,7 +27,7 @@ The script assumes your directories are structured Artist/Album/Song
 To execute the cleaner, open a terminal and run the script directly:
 
 ```bash
-python3 clean_artist_albums.py /path/to/music/directory
+python3 clean_root_music_folder.py /path/to/music/directory
 ```
 
 Replace `/path/to/music/directory` with the actual path to your music collection.
@@ -36,13 +36,13 @@ Replace `/path/to/music/directory` with the actual path to your music collection
 
 #### Delete duplicates (default behavior)
 ```bash
-python3 clean_artist_albums.py /path/to/music/directory
+python3 clean_root_music_folder.py /path/to/music/directory
 ```
 
 #### Find duplicates without deleting
 To preview changes without actually deleting files, use the `--no-delete` flag:
 ```bash
-python3 clean_artist_albums.py /path/to/music/directory --no-delete
+python3 clean_root_music_folder.py /path/to/music/directory --no-delete
 ```
 
 ### Running from Python
@@ -50,13 +50,13 @@ python3 clean_artist_albums.py /path/to/music/directory --no-delete
 You can also import and use the function directly in Python:
 
 ```python
-from clean_artist_albums import clean_artist_albums
+from clean_root_music_folder import clean_root_music_folder
 
 # Delete duplicates
-clean_artist_albums('/path/to/music/directory')
+clean_root_music_folder('/path/to/music/directory')
 
 # Preview without deleting
-clean_artist_albums('/path/to/music/directory', delete_duplicates=False)
+clean_root_music_folder('/path/to/music/directory', delete_duplicates=False)
 ```
 
 ## What the script does
