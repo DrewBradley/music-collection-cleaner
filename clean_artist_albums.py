@@ -1,4 +1,3 @@
-import sys
 from pathlib import Path
 from song_dedupe import deduplicate_songs
 
@@ -75,30 +74,3 @@ def clean_artist_albums(root_directory, delete_duplicates=True):
     print(f"Removed {total_removed} duplicate song(s): {remove_song_list}")
   else:
     print(f"Found {total_removed} duplicate song(s): {remove_song_list} (no files were deleted)")
-
-
-def main():
-  """Main entry point for command-line usage."""
-  if len(sys.argv) < 2:
-    print("Usage: python3 clean_artist_albums.py <directory> [--no-delete]")
-    print()
-    print("Arguments:")
-    print("  <directory>  Path to the music collection directory")
-    print("  --no-delete  Preview changes without deleting files (optional)")
-    sys.exit(1)
-
-  directory = sys.argv[1]
-  delete_duplicates = "--no-delete" not in sys.argv
-
-  try:
-    clean_artist_albums(directory, delete_duplicates=delete_duplicates)
-  except FileNotFoundError as e:
-    print(f"Error: {e}", file=sys.stderr)
-    sys.exit(1)
-  except NotADirectoryError as e:
-    print(f"Error: {e}", file=sys.stderr)
-    sys.exit(1)
-
-
-if __name__ == "__main__":
-  main()
