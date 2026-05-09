@@ -4,8 +4,12 @@ from song_dedupe import deduplicate_songs
 
 AUDIO_EXTENSIONS = {".mp3", ".m4a", ".wma"}
 
-def move_songs_to_unknown_album(root_directory):
-  """Move mp3/m4a/wma files into a root-level "Unknown" folder."""
+def move_songs_to_unknown_album(root_directory, recursive=False):
+  """Move audio files into a root-level "Unknown" folder.
+
+  Only files directly inside root_directory are considered.
+  This prevents moving songs out of nested artist/album subfolders.
+  """
   root = Path(root_directory)
   if not root.exists():
     raise FileNotFoundError(f"Directory does not exist: {root}")
@@ -14,8 +18,9 @@ def move_songs_to_unknown_album(root_directory):
 
   unknown_album_folder = root / "Unknown"
   moved_count = 0
+  iterator = root.iterdir()
 
-  for file_path in root.rglob("*"):
+  for file_path in iterator:
     if file_path.is_file() and file_path.suffix.lower() in AUDIO_EXTENSIONS:
       if unknown_album_folder in file_path.parents:
         continue
@@ -32,8 +37,12 @@ def move_songs_to_unknown_album(root_directory):
   return f"Moved {moved_count} song(s) to '{unknown_album_folder.name}'."
 
 
-def move_non_song_files_to_other(root_directory):
-  """Move non-music files into a root-level "Other" folder."""
+def move_non_song_files_to_other(root_directory, recursive=False):
+  """Move non-music files into a root-level "Other" folder.
+
+  Only files directly inside root_directory are considered.
+  This prevents moving non-music files out of nested artist/album subfolders.
+  """
   root = Path(root_directory)
   if not root.exists():
     raise FileNotFoundError(f"Directory does not exist: {root}")
@@ -42,8 +51,9 @@ def move_non_song_files_to_other(root_directory):
 
   other_folder = root / "Other"
   moved_count = 0
+  iterator = root.iterdir()
 
-  for file_path in root.rglob("*"):
+  for file_path in iterator:
     if file_path.is_file() and file_path.suffix.lower() not in AUDIO_EXTENSIONS:
       if other_folder in file_path.parents:
         continue
@@ -63,8 +73,8 @@ def move_non_song_files_to_other(root_directory):
 def clean_artist_albums(root_directory, delete_duplicates=True):
   """Move all songs into a root-level "Unknown" folder and non-music files into "Other".
   Iterate over album folders and deduplicate songs within each album."""
-  songs_message = move_songs_to_unknown_album(root_directory)
-  other_message = move_non_song_files_to_other(root_directory)
+  songs_message = move_songs_to_unknown_album(root_directory, recursive=False)
+  other_message = move_non_song_files_to_other(root_directory, recursive=False)
 
   print(songs_message)
   print(other_message)
