@@ -20,43 +20,60 @@ Clone or download this repository to your local machine.
 
 ## Usage
 
-The script assumes your directories are structured Artist/Album/Song
+The script assumes your directories are structured as:
+- Root/Artist/Album/Song (for clean_root_music_folder)
+- Artist/Album/Song (for clean_artist_albums)
 
-### Running from command line
+### Option 1: Clean entire music collection (Root level)
 
-To execute the cleaner, open a terminal and run the script directly:
+To clean your entire music collection directory with multiple artist folders:
 
 ```bash
 python3 clean_root_music_folder.py /path/to/music/directory
 ```
 
-Replace `/path/to/music/directory` with the actual path to your music collection.
+Replace `/path/to/music/directory` with the actual path to your root music directory.
 
-### Options
-
-#### Delete duplicates (default behavior)
-```bash
-python3 clean_root_music_folder.py /path/to/music/directory
-```
-
-#### Find duplicates without deleting
-To preview changes without actually deleting files, use the `--no-delete` flag:
+#### Preview changes without deleting:
 ```bash
 python3 clean_root_music_folder.py /path/to/music/directory --no-delete
 ```
 
+### Option 2: Clean individual artist albums
+
+To clean a specific artist directory (without iterating subdirectories):
+
+```bash
+python3 clean_artist_albums.py /path/to/artist/directory
+```
+
+This will:
+- Move orphan songs to "Unknown" folder
+- Move non-music files to "Other" folder
+- Deduplicate songs within each album folder
+
+#### Preview changes without deleting:
+```bash
+python3 clean_artist_albums.py /path/to/artist/directory --no-delete
+```
+
 ### Running from Python
 
-You can also import and use the function directly in Python:
+You can also import and use the functions directly in Python:
 
 ```python
 from clean_root_music_folder import clean_root_music_folder
+from clean_artist_albums import clean_artist_albums
 
-# Delete duplicates
+# Clean entire collection
 clean_root_music_folder('/path/to/music/directory')
+
+# Clean specific artist
+clean_artist_albums('/path/to/artist/directory')
 
 # Preview without deleting
 clean_root_music_folder('/path/to/music/directory', delete_duplicates=False)
+clean_artist_albums('/path/to/artist/directory', delete_duplicates=False)
 ```
 
 ## What the script does
