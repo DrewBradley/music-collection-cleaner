@@ -13,17 +13,21 @@ def move_songs_to_unknown_album(root_directory):
     raise NotADirectoryError(f"Path is not a directory: {root}")
 
   unknown_album_folder = root / "Unknown"
-  unknown_album_folder.mkdir(exist_ok=True)
-
   moved_count = 0
 
   for file_path in root.rglob("*"):
     if file_path.is_file() and file_path.suffix.lower() in AUDIO_EXTENSIONS:
       if unknown_album_folder in file_path.parents:
         continue
+      if not unknown_album_folder.exists():
+        unknown_album_folder.mkdir(exist_ok=True)
       target_path = unknown_album_folder / file_path.name
       file_path.rename(target_path)
       moved_count += 1
+
+  # Remove Unknown only when it exists and is empty.
+  if unknown_album_folder.exists() and unknown_album_folder.is_dir() and not any(unknown_album_folder.iterdir()):
+    unknown_album_folder.rmdir()
 
   return f"Moved {moved_count} song(s) to '{unknown_album_folder.name}'."
 
@@ -37,17 +41,21 @@ def move_non_song_files_to_other(root_directory):
     raise NotADirectoryError(f"Path is not a directory: {root}")
 
   other_folder = root / "Other"
-  other_folder.mkdir(exist_ok=True)
-
   moved_count = 0
 
   for file_path in root.rglob("*"):
     if file_path.is_file() and file_path.suffix.lower() not in AUDIO_EXTENSIONS:
       if other_folder in file_path.parents:
         continue
+      if not other_folder.exists():
+        other_folder.mkdir(exist_ok=True)
       target_path = other_folder / file_path.name
       file_path.rename(target_path)
       moved_count += 1
+
+  # Remove Other only when it exists and is empty.
+  if other_folder.exists() and other_folder.is_dir() and not any(other_folder.iterdir()):
+    other_folder.rmdir()
 
   return f"Moved {moved_count} other file(s) to '{other_folder.name}'."
 
