@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 from clean_artist_albums import move_songs_to_unknown_album, move_non_song_files_to_other, clean_artist_albums
 
-def clean_root_music_folder(root_directory, delete_duplicates=True):
+def clean_root_music_folder(root_directory, delete_duplicates=True, safe_mode=True):
   """Move all songs into a root-level "Unknown" folder and non-music files into "Other".
   Iterate over artist folders and clean each artist's albums."""
   root = Path(root_directory)
@@ -11,8 +11,9 @@ def clean_root_music_folder(root_directory, delete_duplicates=True):
   if not root.is_dir():
     raise NotADirectoryError(f"Path is not a directory: {root}")
 
-  songs_message = move_songs_to_unknown_album(root_directory)
-  other_message = move_non_song_files_to_other(root_directory)
+  scan_recursive = not safe_mode
+  songs_message = move_songs_to_unknown_album(root_directory, recursive=scan_recursive)
+  other_message = move_non_song_files_to_other(root_directory, recursive=scan_recursive)
 
   processed_artists = []
   for artist_folder in root.iterdir():
@@ -31,18 +32,24 @@ def clean_root_music_folder(root_directory, delete_duplicates=True):
 def main():
   """Main entry point for command-line usage."""
   if len(sys.argv) < 2:
-    print("Usage: python3 clean_root_music_folder.py <directory> [--no-delete]")
+    print("Usage: python3 clean_root_music_folder.py <directory> [--no-delete] [--unsafe-recursive-root-scan]")
     print()
     print("Arguments:")
     print("  <directory>  Path to the root music directory")
     print("  --no-delete  Preview changes without deleting files (optional)")
+    print("  --unsafe-recursive-root-scan  Move files from nested folders too (optional)")
     sys.exit(1)
 
   directory = sys.argv[1]
   delete_duplicates = "--no-delete" not in sys.argv
+  safe_mode = "--unsafe-recursive-root-scan" not in sys.argv
 
   try:
-    result = clean_root_music_folder(directory, delete_duplicates=delete_duplicates)
+    result = clean_root_music_folder(
+      directory,
+      delete_duplicates=delete_duplicates,
+      safe_mode=safe_mode,
+    )
     print(result)
   except FileNotFoundError as e:
     print(f"Error: {e}", file=sys.stderr)
