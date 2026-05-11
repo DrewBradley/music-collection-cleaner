@@ -10,6 +10,7 @@ A Python utility to organize and clean up music collections by removing duplicat
 - **Flexible File Formats**: Supports MP3, M4A, and WMA audio files
 - **Safe Root Mode (default)**: Root cleaner only moves files from the immediate root directory
 - **Recovery Utility**: Restore songs from a root `Unknown` folder into `Artist/Album` folders
+- **Unsorted Sorter**: Sort files from an unsorted folder into `Music/Artist/Album`
 
 ## Requirements
 
@@ -89,6 +90,21 @@ pip3 install mutagen
 ```
 
 Without `mutagen`, files are still recoverable but will fall back to `Unknown Artist/Unknown Album` when tags cannot be read.
+
+### Option 4: Sort an unsorted folder into Music/Artist/Album
+
+If you have a folder like `Music/Unsorted` with mixed files, you can sort it into
+`Music/Artist/Album` using the same metadata-driven logic.
+
+#### Dry run (recommended first)
+```bash
+python3 recover_unknown_songs.py /path/to/music/directory --unsorted-folder Unsorted
+```
+
+#### Apply sorting moves
+```bash
+python3 recover_unknown_songs.py /path/to/music/directory --unsorted-folder Unsorted --apply
+```
 
 ### Running from Python
 
