@@ -97,7 +97,7 @@ You can also import and use the functions directly in Python:
 ```python
 from clean_root_music_folder import clean_root_music_folder
 from clean_artist_albums import clean_artist_albums
-from recover_unknown_songs import recover_unknown_songs
+from recover_unknown_songs import recover_unknown_songs, sort_unsorted_songs
 
 # Clean entire collection
 clean_root_music_folder('/path/to/music/directory')
@@ -114,6 +114,12 @@ recover_unknown_songs('/path/to/music/directory', dry_run=True)
 
 # Recover songs from Unknown (apply moves)
 recover_unknown_songs('/path/to/music/directory', dry_run=False)
+
+# Sort from Music/Unsorted into Music/Artist/Album (dry run)
+sort_unsorted_songs('/path/to/music/directory', unsorted_folder_name='Unsorted', dry_run=True)
+
+# Sort from Music/Unsorted into Music/Artist/Album (apply moves)
+sort_unsorted_songs('/path/to/music/directory', unsorted_folder_name='Unsorted', dry_run=False)
 ```
 
 ## What the script does

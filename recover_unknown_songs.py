@@ -65,18 +65,9 @@ def _find_unique_destination(path):
     counter += 1
 
 
-def recover_unknown_songs(music_root, unknown_folder_name="Unknown", dry_run=True, recursive=True):
-  root = Path(music_root)
-  if not root.exists():
-    raise FileNotFoundError(f"Directory does not exist: {root}")
-  if not root.is_dir():
-    raise NotADirectoryError(f"Path is not a directory: {root}")
-
-  unknown_folder = root / unknown_folder_name
-  if not unknown_folder.exists() or not unknown_folder.is_dir():
-    raise FileNotFoundError(f"Unknown folder does not exist: {unknown_folder}")
-
-  iterator = unknown_folder.rglob("*") if recursive else unknown_folder.iterdir()
+def _recover_from_source_folder(root, source_folder, dry_run=True, recursive=True):
+  """Move audio files from a source folder into Music/Artist/Album routes."""
+  iterator = source_folder.rglob("*") if recursive else source_folder.iterdir()
 
   planned_moves = []
   mutagen_missing_count = 0
@@ -115,18 +106,60 @@ def recover_unknown_songs(music_root, unknown_folder_name="Unknown", dry_run=Tru
     return len(planned_moves)
 
   moved_count = 0
+  destination_directories = {destination_file.parent for _, destination_file in planned_moves}
+  for destination_directory in destination_directories:
+    destination_directory.mkdir(parents=True, exist_ok=True)
+
   for source_file, destination_file in planned_moves:
-    destination_file.parent.mkdir(parents=True, exist_ok=True)
     source_file.rename(destination_file)
     moved_count += 1
 
-  print(f"Moved {moved_count} file(s) out of {unknown_folder}")
+  print(f"Moved {moved_count} file(s) out of {source_folder}")
   if mutagen_missing_count:
     print("Warning: mutagen is not installed; files were routed to fallback folders.")
   if unreadable_tag_count:
     print(f"Warning: {unreadable_tag_count} file(s) had missing/invalid tags.")
 
   return moved_count
+
+
+def recover_unknown_songs(music_root, unknown_folder_name="Unknown", dry_run=True, recursive=True):
+  root = Path(music_root)
+  if not root.exists():
+    raise FileNotFoundError(f"Directory does not exist: {root}")
+  if not root.is_dir():
+    raise NotADirectoryError(f"Path is not a directory: {root}")
+
+  unknown_folder = root / unknown_folder_name
+  if not unknown_folder.exists() or not unknown_folder.is_dir():
+    raise FileNotFoundError(f"Unknown folder does not exist: {unknown_folder}")
+
+  return _recover_from_source_folder(
+    root,
+    unknown_folder,
+    dry_run=dry_run,
+    recursive=recursive,
+  )
+
+
+def sort_unsorted_songs(music_root, unsorted_folder_name="Unsorted", dry_run=True, recursive=True):
+  """Sort files from an unsorted folder into Music/Artist/Album routes."""
+  root = Path(music_root)
+  if not root.exists():
+    raise FileNotFoundError(f"Directory does not exist: {root}")
+  if not root.is_dir():
+    raise NotADirectoryError(f"Path is not a directory: {root}")
+
+  unsorted_folder = root / unsorted_folder_name
+  if not unsorted_folder.exists() or not unsorted_folder.is_dir():
+    raise FileNotFoundError(f"Unsorted folder does not exist: {unsorted_folder}")
+
+  return _recover_from_source_folder(
+    root,
+    unsorted_folder,
+    dry_run=dry_run,
+    recursive=recursive,
+  )
 
 
 def main():
@@ -143,6 +176,13 @@ def main():
     help="Name of the unknown folder inside music_root (default: Unknown)",
   )
   parser.add_argument(
+    "--unsorted-folder",
+    help=(
+      "Name of an unsorted source folder inside music_root. "
+      "If provided, this route is sorted into Music/Artist/Album."
+    ),
+  )
+  parser.add_argument(
     "--apply",
     action="store_true",
     help="Execute moves. Without this flag, runs in dry-run mode.",
@@ -156,12 +196,20 @@ def main():
   args = parser.parse_args()
 
   try:
-    recover_unknown_songs(
-      args.music_root,
-      unknown_folder_name=args.unknown_folder,
-      dry_run=not args.apply,
-      recursive=not args.non_recursive,
-    )
+    if args.unsorted_folder:
+      sort_unsorted_songs(
+        args.music_root,
+        unsorted_folder_name=args.unsorted_folder,
+        dry_run=not args.apply,
+        recursive=not args.non_recursive,
+      )
+    else:
+      recover_unknown_songs(
+        args.music_root,
+        unknown_folder_name=args.unknown_folder,
+        dry_run=not args.apply,
+        recursive=not args.non_recursive,
+      )
   except (FileNotFoundError, NotADirectoryError) as exc:
     print(f"Error: {exc}", file=sys.stderr)
     sys.exit(1)
