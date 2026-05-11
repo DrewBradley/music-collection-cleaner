@@ -3,6 +3,13 @@ from pathlib import Path
 from song_dedupe import deduplicate_songs
 
 AUDIO_EXTENSIONS = {".mp3", ".m4a", ".wma"}
+IGNORED_NON_SONG_FILENAMES = {".DS_Store", "Thumbs.db", "desktop.ini"}
+
+
+def _is_ignorable_non_song_file(file_path):
+  """Return True for metadata files that should not trigger an Other folder."""
+  name = file_path.name
+  return name in IGNORED_NON_SONG_FILENAMES or name.startswith("._")
 
 def move_songs_to_unknown_album(root_directory, recursive=False):
   """Move audio files into a root-level "Unknown" folder.
@@ -30,9 +37,19 @@ def move_songs_to_unknown_album(root_directory, recursive=False):
       file_path.rename(target_path)
       moved_count += 1
 
-  # Remove Unknown only when it exists and is empty.
-  if unknown_album_folder.exists() and unknown_album_folder.is_dir() and not any(unknown_album_folder.iterdir()):
-    unknown_album_folder.rmdir()
+  # Remove Unknown when it has no meaningful files (or only ignorable metadata files).
+  if unknown_album_folder.exists() and unknown_album_folder.is_dir():
+    remaining_entries = list(unknown_album_folder.iterdir())
+    meaningful_entries = [
+      entry for entry in remaining_entries
+      if not (entry.is_file() and _is_ignorable_non_song_file(entry))
+    ]
+
+    if not meaningful_entries:
+      for entry in remaining_entries:
+        if entry.is_file() and _is_ignorable_non_song_file(entry):
+          entry.unlink()
+      unknown_album_folder.rmdir()
 
   return f"Moved {moved_count} song(s) to '{unknown_album_folder.name}'."
 
@@ -55,6 +72,8 @@ def move_non_song_files_to_other(root_directory, recursive=False):
 
   for file_path in iterator:
     if file_path.is_file() and file_path.suffix.lower() not in AUDIO_EXTENSIONS:
+      if _is_ignorable_non_song_file(file_path):
+        continue
       if other_folder in file_path.parents:
         continue
       if not other_folder.exists():
@@ -63,9 +82,19 @@ def move_non_song_files_to_other(root_directory, recursive=False):
       file_path.rename(target_path)
       moved_count += 1
 
-  # Remove Other only when it exists and is empty.
-  if other_folder.exists() and other_folder.is_dir() and not any(other_folder.iterdir()):
-    other_folder.rmdir()
+  # Remove Other when it has no meaningful files (or only ignorable metadata files).
+  if other_folder.exists() and other_folder.is_dir():
+    remaining_entries = list(other_folder.iterdir())
+    meaningful_entries = [
+      entry for entry in remaining_entries
+      if not (entry.is_file() and _is_ignorable_non_song_file(entry))
+    ]
+
+    if not meaningful_entries:
+      for entry in remaining_entries:
+        if entry.is_file() and _is_ignorable_non_song_file(entry):
+          entry.unlink()
+      other_folder.rmdir()
 
   return f"Moved {moved_count} other file(s) to '{other_folder.name}'."
 
